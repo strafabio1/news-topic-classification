@@ -12,6 +12,8 @@ Paper per multinomial naive bayes: A Comparison of Event Models for Naive Bayes 
 - ⁠creiamo una feature text_length, è utile per distinguere le classi: Classe 5: Media ~228 caratteri, Classe 2: Media ~456 caratteri, Classe 0: Media ~346 caratteri.
 - dividiamo timestamp in giorno_settimana e ora
 - ⁠prima di usare il most frequent su timestamp, creiamo una feature is_timestamp_valid booleana (altrimenti diciamo che una notizia è uscita sicuramente il mercoledì solo perché è il most frequent)
+- source: teniamo le Top N fonti (es. le prime 20 o 50) e raggruppa tutte le altre in una categoria "Other". Poi applica One-Hot Encoding su queste N+1 categorie
+- hyperparameter n_sources_meaningful
 
 # PreProcessing
 - applichiamo standardScaler
