@@ -13,7 +13,7 @@ Paper per multinomial naive bayes: A Comparison of Event Models for Naive Bayes 
 Lo trattiamo come categorico, perchè se lo trattassimo come numerico da standardizzare o come ordinale SVM e logistiRegression cercherebbero una relazione lineare, mentre abbiamo solo dei picchi che corrispondono alle singole classi. Tipo rank 2 e 3 sono sempre label technology. Possiamo mostrare grafico  
 
 -SOURCE
-Facciamo con Onehot-encoding solo prime 50 e others perchè le prime 50 coprono 87% delle notizie (hyperparameter n_sources_meaningful?)
+Facciamo con Onehot-encoding solo prime 50 e others perchè le prime 50 coprono 87% delle notizie
 
 -DAY OF WEEK
 Estriamo il giorno, e creiamo nuova feature 'is_weekend' perchè per esempio solitamente lo sport esce il weekend mentre la finanza durante la settimana.
