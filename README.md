@@ -65,3 +65,9 @@ Facciamo con Onehot-encoding solo prime 50 e others perchè le prime 50 coprono 
 Estriamo il giorno, e creiamo nuova feature 'is_weekend' perchè per esempio solitamente lo sport esce il weekend mentre la finanza durante la settimana.
 Inoltre creiamo feature 'timestamp_missing' perchè abbiamo ben 27000 valori null per il timestamp e molto spesso abbiamo classi con molti timestamp nulli, altre classi con tanti timestamp
 
+-HOUR
+Estriamo orario e lo encodizziamo con la cosa ciclica hour_sin e hour_cos.
+
+
+
+
