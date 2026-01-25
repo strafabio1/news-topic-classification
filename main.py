@@ -156,6 +156,7 @@ def main():
         ('preprocessor', preprocessor),
         ('classifier', classifier)
     ])
+    
     print("Training model...")
     model_pipeline.fit(X, y)
     print("Model trained.")
