@@ -112,8 +112,8 @@ def main():
     cat_transformer = OneHotEncoder(handle_unknown='ignore')
 
     hour_transformer = Pipeline([
-        ('imputer',SimpleImputer(strategy='mean')),
-        ])
+        ('imputer',SimpleImputer(strategy='constant', fill_value=0)),
+    ])
     source_pipe = Pipeline([
         ('encoder', OneHotEncoder(max_categories=150, handle_unknown='infrequent_if_exist')),
     ])
