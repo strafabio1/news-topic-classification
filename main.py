@@ -3,7 +3,7 @@ import numpy as np
 import html
 import re
 
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, train_test_split, cross_val_score
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
