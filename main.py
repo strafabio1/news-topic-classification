@@ -92,6 +92,7 @@ def extract_time_features(df):
     ], axis=1)
 
 def main():
+    np.random.seed(42)
     print("Loading data...")
     train_df = pd.read_csv("development.csv", na_values=['\\N', '0000-00-00 00:00:00', '  '], encoding='utf-8')
     eval_df = pd.read_csv("evaluation.csv", na_values=['\\N', '0000-00-00 00:00:00', '  '], encoding='utf-8')
