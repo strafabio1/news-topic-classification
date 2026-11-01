@@ -1,58 +1,77 @@
-Data Science Project
+# News Topic Classification from Text and Metadata
 
-# Bibliography
+Multiclass classification of ~100k online news articles into 7 topics, combining TF-IDF text features with engineered metadata features and a linear SVM.
 
-paper su SVM: Text Categorization with Support Vector Machines: Learning with Many Relevant Features (Thorsten Joachims, 1998)
+Project for the **Data Science and Machine Learning Lab** course at Politecnico di Torino (Winter call, A.Y. 2025/2026).
+Full write-up: [`report/Report.pdf`](report/Report.pdf).
 
-paper su Logistic Regression: Large-scale Bayesian logistic regression for text categorization (Genkin et al., 2007)
+| Model | Stratified 5-fold CV (Macro-F1) | Public leaderboard (Macro-F1) |
+|---|---|---|
+| Naive baseline (TF-IDF + Multinomial NB) | – | 0.458 |
+| Logistic Regression | 0.7293 | 0.727 |
+| **Linear SVM (final)** | **0.7334** | **0.733** |
 
-Paper per multinomial naive bayes: A Comparison of Event Models for Naive Bayes Text Classification (McCallum & Nigam, 1998).
+The full pipeline trains and predicts in about a minute on a laptop CPU.
 
-# Feature Engineering
--PAGERANK
-Lo trattiamo come categorico, perchè se lo trattassimo come numerico da standardizzare o come ordinale SVM e logistiRegression cercherebbero una relazione lineare, mentre abbiamo solo dei picchi che corrispondono alle singole classi. Tipo rank 2 e 3 sono sempre label technology. Possiamo mostrare grafico  
+## Problem
 
--SOURCE
-Facciamo con Onehot-encoding solo prime 50 e others perchè le prime 50 coprono 87% delle notizie
+Each article has a `source`, `title`, `article` body, `page_rank` and `timestamp`, and must be assigned one of 7 labels:
 
--DAY OF WEEK
-Estriamo il giorno, e creiamo nuova feature 'is_weekend' perchè per esempio solitamente lo sport esce il weekend mentre la finanza durante la settimana.
-Inoltre creiamo feature 'timestamp_missing' perchè abbiamo ben 27000 valori null per il timestamp e molto spesso abbiamo classi con molti timestamp nulli, altre classi con tanti timestamp
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| International News | Business | Technology | Entertainment | Sports | General News | Health |
 
--HOUR
-Estriamo orario e lo encodizziamo con la cosa ciclica hour_sin e hour_cos.
+The development set has 79,997 labelled articles, the evaluation set 20,000 unlabelled ones. Classes are imbalanced, so the metric is **Macro-F1**.
 
-# PreProcessing
-- applichiamo standardScaler
-- TESTO
-Uniamo title e article e calcoliamo tfidf con ngram_range=(1,3) e sublinear_tf=True, min_df=3 per togliere outlier(ngrammi che si ripetono in meno di 3 "documenti") e max_df=0.5 per non considerare parole che si ripetono in più della metà dei documenti (il testo lo decodifichiamo solo per ora, perchè tipo in html l'apostrofo si vede come &39 e decodificandolo si vede l'apostrofo)
-ngram_range=(1,3) perchè:
-Sports: Il modello vedrebbe parole come "red" o "sox" separatamente. Con i trigrammi cattura "boston red sox" o "new york yankees", che sono segnali inequivocabili di Sport.
-lito
-Health: Parole come "drug" o "administration" sono generiche. Il trigramma "food drug administration" (FDA) o il bigramma "breast cancer" identificano immediatamente la categoria Salute.
+<p align="center"><img src="figures/class_distribution.png" width="560" alt="Class distribution"></p>
 
-International: Ho trovato "prime minister tony" (probabilmente riferito a Blair o Abbott). Questo identifica una figura politica specifica, molto più utile di "tony" da solo.
-Abbiamo solo 1 titolo nan e un articolo nan, possiamo scartarli oppure tenerli visto che comunque abbiamo 
+## Approach
 
-# GRAFICI 
-- istogramma con occorrenze labels per capire se è develpoment.csv è balanced/unbalanced
-- istogramma di articolo di esempio e relative parole (per dimostrare che le rare vengono esaltate e le frequenti ignorate)
-- istogramma top parole tra tutti gli articoli (e relativo peso)
-- istogramma pakeRank/label
+**Cleaning.** Non-standard nulls (`\N`, `0000-00-00 00:00:00`, double spaces) are mapped to NaN at load time. Text is lowercased and HTML-unescaped; HTML/URL delimiters (`< > / = _ …`) are replaced with spaces instead of stripping tags, so words hidden in URLs (e.g. `.../politics/...`) survive. Digits become a `NUM` token and technical noise (`http`, `href`, `jpg`, single characters) is dropped.
 
-# Tests
+**Deduplication.** Duplicates are grouped first by title+article, then by article only. Each group collapses to one row with its majority label; groups with a tie are discarded. The training set goes from 79,997 to about 74k rows.
 
-X = train_df[['text_content','source','page_rank','day_sin','day_cos']], source come ordinal  f1= 0.7210
+**Features.**
+- *Text*: TF-IDF on title+article with uni/bi/trigrams, sublinear TF, English stop words, `min_df=2`, `max_df=0.5`.
+- *PageRank*: one-hot encoded, because specific values map to specific classes rather than following a monotonic trend.
+- *Source*: 1,340 distinct publishers; the 150 most frequent are one-hot encoded and the rest grouped as "infrequent" (cut-off chosen by a sensitivity analysis).
+- *Timestamp*: cyclical hour encoding (`sin`/`cos`), an `is_weekend` flag and a `timestamp_missing` flag (missing timestamps are themselves informative).
 
-X = train_df[['text_content','source','page_rank','day_sin','day_cos']], source come categorical  f1= 0.7211
+<p align="center"><img src="figures/pagerank_by_class.png" width="520" alt="Class proportions by PageRank"></p>
 
-X = train_df[['text_content','source','page_rank']] f1=0.7211
+**Models.** Linear SVM and Logistic Regression, both with `class_weight="balanced"`, tuned with grid search under stratified 5-fold CV. Best SVM: `C=0.3`. Best Logistic Regression: `C=3`, `solver=saga`.
 
-X = train_df[['text_content','source','page_rank','hour_sin','hour_cos']] f1=0.7211
+## Results
 
-X = train_df[['text_content','source','page_rank','hour_sin','hour_cos']]
-f1= 0.7211
+<p align="center"><img src="figures/confusion_matrix.png" width="480" alt="Normalized confusion matrix"></p>
 
+Sports, Business and Technology are recognised well (recall 0.85–0.95). The hardest classes are **General News** (recall 0.47, often predicted as International) and **Entertainment** (0.54), whose content genuinely overlaps with the other categories. CV and public scores match, so the model does not overfit the development set.
 
+## Repository structure
 
+```
+├── src/main.py                    # final pipeline: CV score + submission.csv
+├── notebooks/
+│   ├── eda.ipynb                  # exploratory analysis and figures
+│   ├── experiments.ipynb          # grid searches, sensitivity analyses, model comparison
+│   └── naive_baseline.ipynb       # TF-IDF + Multinomial NB baseline
+├── figures/                       # plots used in the report
+├── report/Report.pdf              # project report
+├── data/                          # dataset goes here (not versioned)
+└── requirements.txt
+```
 
+## How to run
+
+```bash
+pip install -r requirements.txt
+# put development.csv and evaluation.csv in data/ (see data/README.md)
+python src/main.py
+```
+
+The script prints the 5-fold CV Macro-F1, trains on the whole development set and writes `submission.csv` in the repository root.
+
+## Authors
+
+- Fabio Stradiotti
+- Giovanni Indiano

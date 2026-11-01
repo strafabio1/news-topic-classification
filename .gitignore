@@ -1,0 +1,19 @@
+# Dataset (not redistributable)
+data/*
+!data/README.md
+
+# Generated outputs
+submission.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

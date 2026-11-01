@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import html
 import re
+from pathlib import Path
 
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -10,6 +11,10 @@ from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 from sklearn.impute import SimpleImputer
+
+ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
+
 
 def clean_text(text):
     if not isinstance(text, str):
@@ -94,8 +99,8 @@ def extract_time_features(df):
 def main():
     np.random.seed(42)
     print("Loading data...")
-    train_df = pd.read_csv("development.csv", na_values=['\\N', '0000-00-00 00:00:00', '  '], encoding='utf-8')
-    eval_df = pd.read_csv("evaluation.csv", na_values=['\\N', '0000-00-00 00:00:00', '  '], encoding='utf-8')
+    train_df = pd.read_csv(DATA_DIR / "development.csv", na_values=['\\N', '0000-00-00 00:00:00', '  '], encoding='utf-8')
+    eval_df = pd.read_csv(DATA_DIR / "evaluation.csv", na_values=['\\N', '0000-00-00 00:00:00', '  '], encoding='utf-8')
     print("Data loaded successfully.")
     
     print("Cleaning text data...")
@@ -169,7 +174,7 @@ def main():
         'Predicted': eval_predictions
     })
     
-    submission_df.to_csv('submission.csv', index=False)
+    submission_df.to_csv(ROOT / 'submission.csv', index=False)
     print("Submission file created: submission.csv")
 
 if __name__ == "__main__":
